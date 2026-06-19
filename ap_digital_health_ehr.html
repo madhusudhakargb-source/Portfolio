@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AP Digital Health EHR System — Government Healthcare Platform</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg-primary:#ffffff;
+  --bg-secondary:#f5f6f8;
+  --bg-tertiary:#eef0f3;
+  --text-primary:#111827;
+  --text-secondary:#6b7280;
+  --text-tertiary:#9ca3af;
+  --border-light:rgba(0,0,0,0.08);
+  --border-medium:rgba(0,0,0,0.14);
+  --blue:#185FA5;
+  --blue-light:#E6F1FB;
+  --blue-dark:#0C447C;
+  --green:#3B6D11;
+  --green-light:#EAF3DE;
+  --red:#A32D2D;
+  --red-light:#FCEBEB;
+  --amber:#854F0B;
+  --amber-light:#FAEEDA;
+  --radius-md:8px;
+  --radius-lg:12px;
+  --font:DM Sans,sans-serif;
+}
+body{font-family:var(--font);background:var(--bg-secondary);color:var(--text-primary);font-size:14px;line-height:1.5}
+.ehr{display:flex;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:224px;min-width:224px;background:var(--bg-primary);border-right:1px solid var(--border-light);display:flex;flex-direction:column}
+.sidebar-logo{padding:20px 16px 14px;border-bottom:1px solid var(--border-light)}
+.sidebar-logo h1{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+.sidebar-logo h1 i{color:var(--blue);font-size:20px}
+.sidebar-logo p{font-size:11px;color:var(--text-tertiary);margin-top:2px;padding-left:28px}
+.nav-section{padding:14px 8px 4px}
+.nav-label{font-size:10px;font-weight:600;color:var(--text-tertiary);padding:0 8px;letter-spacing:.07em;text-transform:uppercase;margin-bottom:4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-md);cursor:pointer;color:var(--text-secondary);font-size:13px;font-weight:500;transition:all .15s;margin-bottom:1px;user-select:none}
+.nav-item:hover{background:var(--bg-secondary);color:var(--text-primary)}
+.nav-item.active{background:var(--blue-light);color:var(--blue)}
+.nav-item i{font-size:17px}
+.nav-badge{margin-left:auto;background:#E24B4A;color:#fff;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:600}
+.sidebar-footer{margin-top:auto;padding:12px 8px;border-top:1px solid var(--border-light)}
+.user-card{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-md)}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--blue);flex-shrink:0}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{background:var(--bg-primary);border-bottom:1px solid var(--border-light);padding:10px 22px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.topbar h2{font-size:16px;font-weight:600;flex:1}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--bg-secondary);border:1px solid var(--border-light);border-radius:var(--radius-md);padding:7px 12px;width:250px}
+.search-box input{background:none;border:none;outline:none;font-size:13px;color:var(--text-primary);width:100%;font-family:var(--font)}
+.search-box input::placeholder{color:var(--text-tertiary)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius-md);border:1px solid var(--border-medium);background:var(--bg-primary);cursor:pointer;font-size:13px;font-weight:500;color:var(--text-primary);transition:all .15s;font-family:var(--font)}
+.btn:hover{background:var(--bg-secondary)}
+.btn.active{background:var(--blue-light);color:var(--blue);border-color:var(--blue-light)}
+.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-primary:hover{background:var(--blue-dark)}
+.content{flex:1;overflow-y:auto;padding:20px 22px}
+.section{display:none}
+.section.active{display:block}
+
+/* GRIDS */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+
+/* CARDS */
+.card{background:var(--bg-primary);border:1px solid var(--border-light);border-radius:var(--radius-lg);padding:16px}
+.card-title{font-size:13px;font-weight:600;margin-bottom:14px;color:var(--text-secondary)}
+.metric-card{background:var(--bg-secondary);border-radius:var(--radius-md);padding:16px}
+.metric-label{font-size:12px;color:var(--text-secondary);margin-bottom:4px;font-weight:500}
+.metric-value{font-size:26px;font-weight:600}
+.metric-sub{font-size:11px;color:var(--text-tertiary);margin-top:3px;display:flex;align-items:center;gap:3px}
+.metric-up{color:var(--green)}
+.metric-down{color:var(--red)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-blue{background:var(--blue-light);color:var(--blue)}
+.badge-green{background:var(--green-light);color:var(--green)}
+.badge-red{background:var(--red-light);color:var(--red)}
+.badge-amber{background:var(--amber-light);color:var(--amber)}
+.badge-gray{background:var(--bg-tertiary);color:var(--text-secondary)}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-weight:600;font-size:11px;color:var(--text-secondary);padding:9px 14px;text-align:left;border-bottom:1px solid var(--border-light);background:var(--bg-secondary);letter-spacing:.03em;text-transform:uppercase}
+td{padding:11px 14px;border-bottom:1px solid var(--border-light);color:var(--text-primary)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg-secondary)}
+
+/* FORMS */
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:5px;display:block}
+.form-input{width:100%;padding:8px 11px;border:1px solid var(--border-medium);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary);font-size:13px;outline:none;font-family:var(--font);transition:border .15s}
+.form-input:focus{border-color:var(--blue)}
+select.form-input{cursor:pointer}
+textarea.form-input{resize:vertical}
+
+/* ALERT ITEMS */
+.alert-item{display:flex;gap:12px;padding:12px;border-radius:var(--radius-md);margin-bottom:8px;align-items:flex-start}
+.alert-item.critical{background:var(--red-light);border-left:3px solid #E24B4A}
+.alert-item.warning{background:var(--amber-light);border-left:3px solid #EF9F27}
+.alert-item.info{background:var(--blue-light);border-left:3px solid #378ADD}
+
+/* TIMELINE */
+.timeline-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-light)}
+.timeline-item:last-child{border-bottom:none}
+.timeline-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
+
+/* APPOINTMENT SLOTS */
+.apt-slot{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-md);border:1px solid var(--border-light);margin-bottom:8px;cursor:pointer;background:var(--bg-primary);transition:background .15s}
+.apt-slot:hover{background:var(--bg-secondary)}
+.apt-time{font-size:12px;font-weight:600;color:var(--text-secondary);min-width:48px}
+.apt-info{flex:1}
+.apt-name{font-size:13px;font-weight:600}
+.apt-type{font-size:11px;color:var(--text-secondary)}
+
+/* VITALS */
+.vitals-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.vital-card{background:var(--bg-secondary);border-radius:var(--radius-md);padding:14px;text-align:center}
+.vital-val{font-size:22px;font-weight:600;margin:4px 0}
+.vital-label{font-size:11px;color:var(--text-secondary);font-weight:500}
+.vital-unit{font-size:11px;color:var(--text-tertiary)}
+
+/* CHART BARS */
+.chart-bar-wrap{display:flex;align-items:flex-end;gap:6px;height:110px;padding:0 4px}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex:1;gap:4px}
+.bar{width:100%;border-radius:4px 4px 0 0;min-height:4px}
+.bar-label{font-size:10px;color:var(--text-tertiary)}
+.chart-labels{display:flex;justify-content:space-between;padding:4px 4px 0;font-size:10px;color:var(--text-tertiary)}
+
+/* PROGRESS */
+.progress-bar{height:6px;background:var(--bg-tertiary);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width .5s ease}
+
+/* MODALS */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg-primary);border-radius:var(--radius-lg);border:1px solid var(--border-light);padding:22px;width:520px;max-width:96vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.modal-title{font-size:16px;font-weight:600}
+.close-btn{background:none;border:none;cursor:pointer;color:var(--text-secondary);font-size:20px;line-height:1;padding:2px}
+.close-btn:hover{color:var(--text-primary)}
+
+/* TABS */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border-light);margin-bottom:16px}
+.tab{padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text-secondary);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab:hover{color:var(--text-primary)}
+.tab.active{color:var(--blue);border-color:var(--blue)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-medium);border-radius:10px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:#111827;color:#fff;padding:12px 18px;border-radius:var(--radius-md);font-size:13px;font-weight:500;z-index:9999;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+@media(max-width:900px){
+  .sidebar{width:54px;min-width:54px}
+  .sidebar-logo p,.nav-label,.nav-item span,.sidebar-footer .user-card div{display:none}
+  .sidebar-logo h1{font-size:0}
+  .sidebar-logo h1 i{font-size:22px}
+  .nav-item{justify-content:center;padding:10px}
+  .grid4{grid-template-columns:1fr 1fr}
+  .grid2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="ehr">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <h1><i class="ti ti-heart-rate-monitor"></i><span>AP Digital Health</span></h1>
+    <p>EHR Government Platform</p>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Main</div>
+    <div class="nav-item active" onclick="showSection('dashboard',this)"><i class="ti ti-layout-dashboard"></i><span>Dashboard</span></div>
+    <div class="nav-item" onclick="showSection('patients',this)"><i class="ti ti-users"></i><span>Patients</span><span class="nav-badge" id="patient-count">8</span></div>
+    <div class="nav-item" onclick="showSection('appointments',this)"><i class="ti ti-calendar"></i><span>Appointments</span></div>
+    <div class="nav-item" onclick="showSection('records',this)"><i class="ti ti-file-medical"></i><span>Medical Records</span></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Clinical</div>
+    <div class="nav-item" onclick="showSection('pharmacy',this)"><i class="ti ti-pill"></i><span>Pharmacy</span></div>
+    <div class="nav-item" onclick="showSection('lab',this)"><i class="ti ti-microscope"></i><span>Lab Results</span></div>
+    <div class="nav-item" onclick="showSection('alerts',this)"><i class="ti ti-bell"></i><span>Alerts</span><span class="nav-badge">3</span></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Admin</div>
+    <div class="nav-item" onclick="showSection('analytics',this)"><i class="ti ti-chart-bar"></i><span>Analytics</span></div>
+    <div class="nav-item" onclick="showSection('settings',this)"><i class="ti ti-settings"></i><span>Settings</span></div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="avatar">DR</div>
+      <div>
+        <div style="font-size:13px;font-weight:600">Dr. Ramana</div>
+        <div style="font-size:11px;color:var(--text-tertiary)">Physician · APIMS</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+  <div class="topbar">
+    <h2 id="page-title">Dashboard</h2>
+    <div class="search-box">
+      <i class="ti ti-search" style="color:var(--text-tertiary);font-size:14px"></i>
+      <input type="text" placeholder="Search patients, records..." id="global-search" oninput="globalSearch(this.value)">
+    </div>
+    <button class="btn" onclick="openModal('notification-modal')" title="Notifications"><i class="ti ti-bell"></i></button>
+    <button class="btn btn-primary" id="action-btn" onclick="openModal('add-patient-modal')"><i class="ti ti-plus"></i> <span id="action-label">New Patient</span></button>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="section active" id="sec-dashboard">
+      <div class="grid4" style="margin-bottom:18px">
+        <div class="metric-card">
+          <div class="metric-label">Total Patients</div>
+          <div class="metric-value" id="m-patients">8</div>
+          <div class="metric-sub metric-up"><i class="ti ti-arrow-up" style="font-size:11px"></i> +2 this month</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Today's Appointments</div>
+          <div class="metric-value">6</div>
+          <div class="metric-sub">4 confirmed · 2 pending</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Pending Lab Results</div>
+          <div class="metric-value">2</div>
+          <div class="metric-sub metric-down"><i class="ti ti-clock" style="font-size:11px"></i> 1 critical</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Active Prescriptions</div>
+          <div class="metric-value">7</div>
+          <div class="metric-sub metric-up"><i class="ti ti-arrow-up" style="font-size:11px"></i> 1 due soon</div>
+        </div>
+      </div>
+
+      <div class="grid2" style="margin-bottom:16px">
+        <div class="card">
+          <div class="card-title">Today's Appointments</div>
+          <div id="todays-apts"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Recent Activity</div>
+          <div id="recent-activity"></div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">Monthly Patient Visits</div>
+          <div class="chart-bar-wrap" id="visit-chart"></div>
+          <div class="chart-labels" id="visit-labels"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Active Alerts</div>
+          <div class="alert-item critical"><i class="ti ti-alert-triangle" style="color:var(--red);font-size:18px;margin-top:1px"></i><div><div style="font-weight:600;font-size:13px">Krithi Reddy — BP: 185/110</div><div style="font-size:12px;color:#791F1F">Hypertensive urgency — immediate review needed</div></div></div>
+          <div class="alert-item warning"><i class="ti ti-pill" style="color:var(--amber);font-size:18px;margin-top:1px"></i><div><div style="font-weight:600;font-size:13px">Suresh Babu — Refill due</div><div style="font-size:12px;color:#633806">Metformin 500mg — 2 days remaining</div></div></div>
+          <div class="alert-item info"><i class="ti ti-file-text" style="color:var(--blue);font-size:18px;margin-top:1px"></i><div><div style="font-weight:600;font-size:13px">Lab ready — Priya Sharma</div><div style="font-size:12px;color:var(--blue-dark)">HbA1c panel — awaiting physician review</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PATIENTS -->
+    <div class="section" id="sec-patients">
+      <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center;flex-wrap:wrap">
+        <input class="form-input" style="width:220px" placeholder="Search patients..." id="patient-search" oninput="filterPatients(this.value)">
+        <select class="form-input" style="width:160px" onchange="filterPatientStatus(this.value)">
+          <option value="">All statuses</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+          <option value="Critical">Critical</option>
+        </select>
+        <button class="btn btn-primary" style="margin-left:auto" onclick="openModal('add-patient-modal')"><i class="ti ti-plus"></i> Add patient</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead><tr><th>Patient</th><th>Age / Gender</th><th>Condition</th><th>Last Visit</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="patient-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- APPOINTMENTS -->
+    <div class="section" id="sec-appointments">
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="btn active" onclick="filterApts('all',this)">All</button>
+        <button class="btn" onclick="filterApts('Confirmed',this)">Confirmed</button>
+        <button class="btn" onclick="filterApts('Pending',this)">Pending</button>
+        <button class="btn" onclick="filterApts('Completed',this)">Completed</button>
+        <button class="btn btn-primary" style="margin-left:auto" onclick="openModal('add-apt-modal')"><i class="ti ti-plus"></i> Book appointment</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead><tr><th>Date & Time</th><th>Patient</th><th>Doctor</th><th>Type</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="apt-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- RECORDS -->
+    <div class="section" id="sec-records">
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <input class="form-input" style="width:260px" placeholder="Search by patient or diagnosis..." oninput="filterRecords(this.value)">
+        <button class="btn btn-primary" style="margin-left:auto" onclick="openModal('add-record-modal')"><i class="ti ti-plus"></i> New record</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead><tr><th>Patient</th><th>Date</th><th>Diagnosis</th><th>Doctor</th><th>Vitals</th><th>Actions</th></tr></thead>
+          <tbody id="records-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PHARMACY -->
+    <div class="section" id="sec-pharmacy">
+      <div class="grid2" style="margin-bottom:16px">
+        <div class="metric-card"><div class="metric-label">Active Prescriptions</div><div class="metric-value">7</div></div>
+        <div class="metric-card"><div class="metric-label">Refills Due This Week</div><div class="metric-value" style="color:var(--amber)">1</div></div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead><tr><th>Patient</th><th>Medication</th><th>Dosage</th><th>Frequency</th><th>Prescribed</th><th>Refills</th><th>Status</th></tr></thead>
+          <tbody id="pharmacy-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LAB -->
+    <div class="section" id="sec-lab">
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="btn active" onclick="filterLab('all',this)">All</button>
+        <button class="btn" onclick="filterLab('Pending',this)">Pending</button>
+        <button class="btn" onclick="filterLab('Critical',this)">Critical</button>
+        <button class="btn" onclick="filterLab('Normal',this)">Normal</button>
+        <button class="btn" onclick="filterLab('Abnormal',this)">Abnormal</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead><tr><th>Patient</th><th>Test</th><th>Ordered</th><th>Result</th><th>Reference</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="lab-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="section" id="sec-alerts">
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">Critical Alerts</div>
+        <div class="alert-item critical"><i class="ti ti-heart-rate-monitor" style="color:var(--red);font-size:20px;margin-top:1px"></i><div><div style="font-weight:600">Krithi Reddy — Hypertensive Urgency</div><div style="font-size:12px;color:#791F1F;margin-top:2px">BP: 185/110 mmHg recorded at 09:30 AM. Immediate physician review required.</div><div style="font-size:11px;color:var(--text-tertiary);margin-top:5px">Today, 09:30 AM</div></div></div>
+        <div class="alert-item critical"><i class="ti ti-droplet" style="color:var(--red);font-size:20px;margin-top:1px"></i><div><div style="font-weight:600">Aravind Kumar — HbA1c: 11.2%</div><div style="font-size:12px;color:#791F1F;margin-top:2px">Severely uncontrolled diabetes. Adjust insulin regimen immediately.</div><div style="font-size:11px;color:var(--text-tertiary);margin-top:5px">Yesterday, 4:15 PM</div></div></div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">Warnings</div>
+        <div class="alert-item warning"><i class="ti ti-pill" style="color:var(--amber);font-size:20px;margin-top:1px"></i><div><div style="font-weight:600">Suresh Babu — Medication Refill Due</div><div style="font-size:12px;color:#633806;margin-top:2px">Metformin 500mg — 2 days supply remaining.</div></div></div>
+        <div class="alert-item warning"><i class="ti ti-calendar-x" style="color:var(--amber);font-size:20px;margin-top:1px"></i><div><div style="font-weight:600">Missed appointments this week</div><div style="font-size:12px;color:#633806;margin-top:2px">Follow-up recommended: Venkat Rao, Durga Prasad</div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Informational</div>
+        <div class="alert-item info"><i class="ti ti-file-text" style="color:var(--blue);font-size:20px;margin-top:1px"></i><div><div style="font-weight:600">Lab results ready — Priya Sharma</div><div style="font-size:12px;color:var(--blue-dark);margin-top:2px">HbA1c, Lipid panel — awaiting physician review.</div></div></div>
+        <div class="alert-item info"><i class="ti ti-vaccine" style="color:var(--blue);font-size:20px;margin-top:1px"></i><div><div style="font-weight:600">Immunisation drive — patients due</div><div style="font-size:12px;color:var(--blue-dark);margin-top:2px">Influenza booster — schedule for this week.</div></div></div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="section" id="sec-analytics">
+      <div class="grid4" style="margin-bottom:16px">
+        <div class="metric-card"><div class="metric-label">Avg. Wait Time</div><div class="metric-value">14<span style="font-size:15px;font-weight:400">min</span></div></div>
+        <div class="metric-card"><div class="metric-label">Patient Satisfaction</div><div class="metric-value">92<span style="font-size:15px;font-weight:400">%</span></div></div>
+        <div class="metric-card"><div class="metric-label">Bed Occupancy</div><div class="metric-value">67<span style="font-size:15px;font-weight:400">%</span></div></div>
+        <div class="metric-card"><div class="metric-label">Re-admission Rate</div><div class="metric-value">4.2<span style="font-size:15px;font-weight:400">%</span></div></div>
+      </div>
+      <div class="grid2" style="margin-bottom:16px">
+        <div class="card"><div class="card-title">Top Diagnoses</div><div id="top-diagnoses"></div></div>
+        <div class="card"><div class="card-title">Department Load</div><div id="dept-load"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Patient Age Distribution</div>
+        <div class="chart-bar-wrap" id="age-chart" style="height:120px"></div>
+        <div class="chart-labels" id="age-labels"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="section" id="sec-settings">
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">Facility Information</div>
+          <div class="form-group"><label class="form-label">Facility name</label><input class="form-input" value="AP Government District Hospital"></div>
+          <div class="form-group"><label class="form-label">HFR ID</label><input class="form-input" value="HFR-AP-2024-0471"></div>
+          <div class="form-group"><label class="form-label">District</label><input class="form-input" value="East Godavari"></div>
+          <div class="form-group"><label class="form-label">State</label><input class="form-input" value="Andhra Pradesh"></div>
+          <button class="btn btn-primary" onclick="showToast('Facility settings saved')">Save changes</button>
+        </div>
+        <div class="card">
+          <div class="card-title">User & Access</div>
+          <div class="form-group"><label class="form-label">Logged in as</label><input class="form-input" value="Dr. V. Ramana" readonly></div>
+          <div class="form-group"><label class="form-label">Role</label><select class="form-input"><option>Physician</option><option>Nurse</option><option>Admin</option></select></div>
+          <div class="form-group"><label class="form-label">Department</label><input class="form-input" value="General Medicine"></div>
+          <div class="card-title" style="margin-top:18px;margin-bottom:10px">Notifications</div>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+            <label style="display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox" checked> Critical alert emails</label>
+            <label style="display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox" checked> Lab result notifications</label>
+            <label style="display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox"> Appointment reminders</label>
+          </div>
+          <button class="btn btn-primary" style="margin-top:16px" onclick="showToast('User settings saved')">Save changes</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+</div><!-- /ehr -->
+
+<!-- MODALS -->
+<div class="modal-overlay" id="add-patient-modal">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Register New Patient</span><button class="close-btn" onclick="closeModal('add-patient-modal')"><i class="ti ti-x"></i></button></div>
+    <div class="grid2">
+      <div class="form-group"><label class="form-label">First name</label><input class="form-input" id="p-fname" placeholder="e.g. Priya"></div>
+      <div class="form-group"><label class="form-label">Last name</label><input class="form-input" id="p-lname" placeholder="e.g. Sharma"></div>
+    </div>
+    <div class="grid2">
+      <div class="form-group"><label class="form-label">Date of birth</label><input class="form-input" type="date" id="p-dob"></div>
+      <div class="form-group"><label class="form-label">Gender</label><select class="form-input" id="p-gender"><option>Female</option><option>Male</option><option>Other</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Aadhaar / Patient ID</label><input class="form-input" id="p-id" placeholder="12-digit Aadhaar or hospital ID"></div>
+    <div class="form-group"><label class="form-label">Contact number</label><input class="form-input" id="p-phone" placeholder="+91 XXXXX XXXXX"></div>
+    <div class="form-group"><label class="form-label">Primary diagnosis / presenting complaint</label><input class="form-input" id="p-diag" placeholder="e.g. Type 2 Diabetes"></div>
+    <div class="form-group"><label class="form-label">Known allergies</label><input class="form-input" id="p-allergy" placeholder="e.g. Penicillin, or None"></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn" onclick="closeModal('add-patient-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addPatient()"><i class="ti ti-check"></i> Register patient</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="add-apt-modal">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Book Appointment</span><button class="close-btn" onclick="closeModal('add-apt-modal')"><i class="ti ti-x"></i></button></div>
+    <div class="form-group"><label class="form-label">Patient</label><select class="form-input" id="apt-patient-sel"></select></div>
+    <div class="grid2">
+      <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="apt-date"></div>
+      <div class="form-group"><label class="form-label">Time</label><select class="form-input" id="apt-time"><option>09:00</option><option>09:30</option><option>10:00</option><option>10:30</option><option>11:00</option><option>11:30</option><option>14:00</option><option>14:30</option><option>15:00</option><option>15:30</option><option>16:00</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Doctor</label><select class="form-input" id="apt-doctor"><option>Dr. Ramana (Gen. Medicine)</option><option>Dr. Kavitha (Gynaecology)</option><option>Dr. Subramaniam (Cardiology)</option><option>Dr. Lakshmi (Paediatrics)</option></select></div>
+    <div class="form-group"><label class="form-label">Appointment type</label><select class="form-input" id="apt-type"><option>General Consultation</option><option>Follow-up</option><option>Lab Review</option><option>Procedure</option><option>Emergency</option></select></div>
+    <div class="form-group"><label class="form-label">Notes (optional)</label><textarea class="form-input" rows="2" id="apt-notes" placeholder="Additional notes..."></textarea></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn" onclick="closeModal('add-apt-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addAppointment()"><i class="ti ti-check"></i> Book appointment</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="add-record-modal">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">New Medical Record</span><button class="close-btn" onclick="closeModal('add-record-modal')"><i class="ti ti-x"></i></button></div>
+    <div class="form-group"><label class="form-label">Patient</label><select class="form-input" id="rec-patient-sel"></select></div>
+    <div class="form-group"><label class="form-label">Diagnosis</label><input class="form-input" id="rec-diag" placeholder="Primary diagnosis"></div>
+    <div class="form-group"><label class="form-label">Clinical notes</label><textarea class="form-input" rows="3" id="rec-notes" placeholder="Symptoms, findings, treatment plan..."></textarea></div>
+    <div class="grid3">
+      <div class="form-group"><label class="form-label">BP (mmHg)</label><input class="form-input" id="rec-bp" placeholder="120/80"></div>
+      <div class="form-group"><label class="form-label">Pulse (bpm)</label><input class="form-input" id="rec-pulse" placeholder="72"></div>
+      <div class="form-group"><label class="form-label">Temp (°C)</label><input class="form-input" id="rec-temp" placeholder="37.0"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn" onclick="closeModal('add-record-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addRecord()"><i class="ti ti-check"></i> Save record</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="patient-detail-modal">
+  <div class="modal" style="width:580px">
+    <div class="modal-header"><span class="modal-title" id="detail-name">Patient Details</span><button class="close-btn" onclick="closeModal('patient-detail-modal')"><i class="ti ti-x"></i></button></div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('overview',this)">Overview</div>
+      <div class="tab" onclick="switchTab('vitals',this)">Vitals</div>
+      <div class="tab" onclick="switchTab('meds',this)">Medications</div>
+      <div class="tab" onclick="switchTab('visits',this)">Visit history</div>
+    </div>
+    <div id="tab-overview"></div>
+    <div id="tab-vitals" style="display:none"></div>
+    <div id="tab-meds" style="display:none"></div>
+    <div id="tab-visits" style="display:none"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="notification-modal">
+  <div class="modal" style="width:420px">
+    <div class="modal-header"><span class="modal-title">Notifications</span><button class="close-btn" onclick="closeModal('notification-modal')"><i class="ti ti-x"></i></button></div>
+    <div class="alert-item critical"><i class="ti ti-alert-triangle" style="color:var(--red);font-size:18px"></i><div><div style="font-weight:600;font-size:13px">Critical: Krithi Reddy BP alert</div><div style="font-size:11px;color:#791F1F">Today, 09:30 AM</div></div></div>
+    <div class="alert-item warning"><i class="ti ti-pill" style="color:var(--amber);font-size:18px"></i><div><div style="font-weight:600;font-size:13px">Refill needed: Suresh Babu</div><div style="font-size:11px;color:#633806">2 days ago</div></div></div>
+    <div class="alert-item info"><i class="ti ti-file-text" style="color:var(--blue);font-size:18px"></i><div><div style="font-weight:600;font-size:13px">Lab ready: Priya Sharma</div><div style="font-size:11px;color:var(--blue-dark)">1 hour ago</div></div></div>
+    <button class="btn" style="width:100%;margin-top:10px" onclick="showToast('All notifications marked as read');closeModal('notification-modal')">Mark all as read</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const patients=[
+  {id:'APIMS-001',name:'Priya Sharma',age:38,gender:'Female',condition:'Type 2 Diabetes',lastVisit:'2025-06-01',status:'Active',bp:'118/76',pulse:'72',temp:'37.0',meds:['Metformin 500mg','Glimepiride 2mg'],allergy:'None'},
+  {id:'APIMS-002',name:'Suresh Babu',age:52,gender:'Male',condition:'Hypertension',lastVisit:'2025-05-28',status:'Active',bp:'142/88',pulse:'80',temp:'36.8',meds:['Amlodipine 5mg','Telmisartan 40mg'],allergy:'Aspirin'},
+  {id:'APIMS-003',name:'Krithi Reddy',age:45,gender:'Female',condition:'Hypertensive Urgency',lastVisit:'2025-06-07',status:'Critical',bp:'185/110',pulse:'94',temp:'37.2',meds:['Nifedipine 10mg'],allergy:'None'},
+  {id:'APIMS-004',name:'Aravind Kumar',age:61,gender:'Male',condition:'Uncontrolled Diabetes',lastVisit:'2025-06-05',status:'Critical',bp:'135/84',pulse:'78',temp:'37.1',meds:['Insulin Glargine','Metformin 1g'],allergy:'Sulpha drugs'},
+  {id:'APIMS-005',name:'Lakshmi Devi',age:29,gender:'Female',condition:'Anaemia',lastVisit:'2025-05-20',status:'Active',bp:'110/70',pulse:'88',temp:'36.9',meds:['Ferrous Sulphate 200mg','Folic Acid 5mg'],allergy:'None'},
+  {id:'APIMS-006',name:'Venkat Rao',age:44,gender:'Male',condition:'COPD',lastVisit:'2025-05-15',status:'Inactive',bp:'128/82',pulse:'76',temp:'36.7',meds:['Salbutamol inhaler','Budesonide'],allergy:'NSAIDs'},
+  {id:'APIMS-007',name:'Durga Prasad',age:35,gender:'Male',condition:'Peptic Ulcer',lastVisit:'2025-04-30',status:'Inactive',bp:'120/78',pulse:'70',temp:'36.6',meds:['Pantoprazole 40mg','Amoxicillin 500mg'],allergy:'None'},
+  {id:'APIMS-008',name:'Sridevi Nair',age:55,gender:'Female',condition:'Hypothyroidism',lastVisit:'2025-06-03',status:'Active',bp:'124/80',pulse:'64',temp:'36.5',meds:['Levothyroxine 50mcg'],allergy:'Iodine'},
+];
+
+const appointments=[
+  {dt:'07 Jun, 09:00',patient:'Krithi Reddy',doctor:'Dr. Ramana',type:'Emergency',status:'Confirmed'},
+  {dt:'07 Jun, 09:30',patient:'Priya Sharma',doctor:'Dr. Ramana',type:'Follow-up',status:'Confirmed'},
+  {dt:'07 Jun, 10:00',patient:'Suresh Babu',doctor:'Dr. Subramaniam',type:'General Consultation',status:'Confirmed'},
+  {dt:'07 Jun, 10:30',patient:'Aravind Kumar',doctor:'Dr. Ramana',type:'Lab Review',status:'Pending'},
+  {dt:'07 Jun, 11:00',patient:'Lakshmi Devi',doctor:'Dr. Kavitha',type:'General Consultation',status:'Pending'},
+  {dt:'07 Jun, 14:00',patient:'Sridevi Nair',doctor:'Dr. Ramana',type:'Follow-up',status:'Confirmed'},
+  {dt:'05 Jun, 09:00',patient:'Venkat Rao',doctor:'Dr. Ramana',type:'General Consultation',status:'Completed'},
+  {dt:'04 Jun, 10:00',patient:'Durga Prasad',doctor:'Dr. Ramana',type:'Follow-up',status:'Completed'},
+];
+
+const records=[
+  {patient:'Priya Sharma',date:'01 Jun 2025',diagnosis:'Type 2 Diabetes — controlled',doctor:'Dr. Ramana',bp:'118/76',pulse:'72',temp:'37.0'},
+  {patient:'Suresh Babu',date:'28 May 2025',diagnosis:'Hypertension — mild',doctor:'Dr. Subramaniam',bp:'142/88',pulse:'80',temp:'36.8'},
+  {patient:'Krithi Reddy',date:'07 Jun 2025',diagnosis:'Hypertensive urgency',doctor:'Dr. Ramana',bp:'185/110',pulse:'94',temp:'37.2'},
+  {patient:'Aravind Kumar',date:'05 Jun 2025',diagnosis:'Uncontrolled Type 2 Diabetes',doctor:'Dr. Ramana',bp:'135/84',pulse:'78',temp:'37.1'},
+  {patient:'Lakshmi Devi',date:'20 May 2025',diagnosis:'Iron deficiency anaemia',doctor:'Dr. Kavitha',bp:'110/70',pulse:'88',temp:'36.9'},
+  {patient:'Sridevi Nair',date:'03 Jun 2025',diagnosis:'Hypothyroidism — on medication',doctor:'Dr. Ramana',bp:'124/80',pulse:'64',temp:'36.5'},
+];
+
+const pharmacy=[
+  {patient:'Priya Sharma',med:'Metformin 500mg',dose:'Twice daily',freq:'After meals',prescribed:'01 Jun',refills:2,status:'Active'},
+  {patient:'Suresh Babu',med:'Metformin 500mg',dose:'Once daily',freq:'Morning',prescribed:'28 May',refills:0,status:'Due soon'},
+  {patient:'Suresh Babu',med:'Amlodipine 5mg',dose:'Once daily',freq:'Morning',prescribed:'28 May',refills:3,status:'Active'},
+  {patient:'Krithi Reddy',med:'Nifedipine 10mg',dose:'Twice daily',freq:'As directed',prescribed:'07 Jun',refills:1,status:'Active'},
+  {patient:'Aravind Kumar',med:'Insulin Glargine 20U',dose:'Once daily',freq:'Night',prescribed:'05 Jun',refills:2,status:'Active'},
+  {patient:'Lakshmi Devi',med:'Ferrous Sulphate 200mg',dose:'Once daily',freq:'After meals',prescribed:'20 May',refills:1,status:'Active'},
+  {patient:'Sridevi Nair',med:'Levothyroxine 50mcg',dose:'Once daily',freq:'Empty stomach',prescribed:'03 Jun',refills:5,status:'Active'},
+];
+
+const labResults=[
+  {patient:'Priya Sharma',test:'HbA1c',ordered:'01 Jun',result:'7.2%',ref:'<7.0%',status:'Normal'},
+  {patient:'Aravind Kumar',test:'HbA1c',ordered:'05 Jun',result:'11.2%',ref:'<7.0%',status:'Critical'},
+  {patient:'Krithi Reddy',test:'BMP Panel',ordered:'07 Jun',result:'Pending',ref:'—',status:'Pending'},
+  {patient:'Suresh Babu',test:'Lipid Panel',ordered:'28 May',result:'LDL 148',ref:'<130 mg/dL',status:'Abnormal'},
+  {patient:'Lakshmi Devi',test:'CBC',ordered:'20 May',result:'Hb: 8.4g/dL',ref:'12–16 g/dL',status:'Critical'},
+  {patient:'Sridevi Nair',test:'TSH',ordered:'03 Jun',result:'3.2 mIU/L',ref:'0.4–4.0',status:'Normal'},
+  {patient:'Venkat Rao',test:'Spirometry',ordered:'15 May',result:'FEV1: 62%',ref:'>80%',status:'Abnormal'},
+];
+
+let filteredPatients=[...patients];
+let allRecords=[...records];
+
+function badge(s){
+  const m={Active:'badge-green',Critical:'badge-red',Inactive:'badge-gray',Confirmed:'badge-blue',Pending:'badge-amber',Completed:'badge-gray',Normal:'badge-green',Abnormal:'badge-amber','Due soon':'badge-amber'};
+  return`<span class="badge ${m[s]||'badge-gray'}">${s}</span>`;
+}
+
+function renderPatients(list){
+  document.getElementById('patient-tbody').innerHTML=list.map(p=>`<tr>
+    <td><div style="display:flex;align-items:center;gap:10px">
+      <div class="avatar" style="background:${p.status==='Critical'?'var(--red-light)':'var(--blue-light)'};color:${p.status==='Critical'?'var(--red)':'var(--blue)'}">${p.name.split(' ').map(n=>n[0]).join('')}</div>
+      <div><div style="font-weight:600">${p.name}</div><div style="font-size:11px;color:var(--text-tertiary)">${p.id}</div></div></div></td>
+    <td>${p.age} / ${p.gender}</td>
+    <td>${p.condition}</td>
+    <td>${p.lastVisit}</td>
+    <td>${badge(p.status)}</td>
+    <td><button class="btn" style="padding:5px 10px;font-size:12px" onclick="viewPatient('${p.name}')"><i class="ti ti-eye"></i> View</button></td>
+  </tr>`).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text-tertiary);padding:24px">No patients found</td></tr>';
+}
+
+function renderAppointments(list){
+  document.getElementById('apt-tbody').innerHTML=list.map(a=>`<tr>
+    <td style="font-weight:600">${a.dt}</td>
+    <td>${a.patient}</td>
+    <td>${a.doctor}</td>
+    <td>${a.type}</td>
+    <td>${badge(a.status)}</td>
+    <td><button class="btn" style="padding:5px 10px;font-size:12px" onclick="if(this.closest('tr').children[4].innerHTML.includes('Completed'))return;this.closest('tr').children[4].innerHTML='<span class=\'badge badge-gray\'>Completed</span>';showToast('Appointment marked as completed')"><i class="ti ti-check"></i></button></td>
+  </tr>`).join('');
+}
+
+function renderRecords(list){
+  document.getElementById('records-tbody').innerHTML=list.map(r=>`<tr>
+    <td style="font-weight:600">${r.patient}</td>
+    <td>${r.date}</td>
+    <td>${r.diagnosis}</td>
+    <td>${r.doctor}</td>
+    <td style="font-size:12px"><span style="color:var(--text-secondary)">BP:</span> ${r.bp} &nbsp;<span style="color:var(--text-secondary)">P:</span> ${r.pulse}</td>
+    <td><button class="btn" style="padding:5px 10px;font-size:12px" onclick="showToast('Record exported as PDF')"><i class="ti ti-download"></i> Export</button></td>
+  </tr>`).join('');
+}
+
+function renderPharmacy(){
+  document.getElementById('pharmacy-tbody').innerHTML=pharmacy.map(p=>`<tr>
+    <td style="font-weight:600">${p.patient}</td><td>${p.med}</td><td>${p.dose}</td><td>${p.freq}</td><td>${p.prescribed}</td><td>${p.refills}</td><td>${badge(p.status)}</td>
+  </tr>`).join('');
+}
+
+function renderLab(list){
+  document.getElementById('lab-tbody').innerHTML=list.map(l=>`<tr>
+    <td style="font-weight:600">${l.patient}</td>
+    <td>${l.test}</td>
+    <td>${l.ordered}</td>
+    <td style="color:${l.status==='Critical'?'var(--red)':l.status==='Abnormal'?'var(--amber)':'inherit'};font-weight:${['Critical','Abnormal'].includes(l.status)?'600':'400'}">${l.result}</td>
+    <td style="font-size:12px;color:var(--text-secondary)">${l.ref}</td>
+    <td>${badge(l.status)}</td>
+    <td><button class="btn" style="padding:5px 10px;font-size:12px" onclick="showToast('Lab report opened')"><i class="ti ti-eye"></i></button></td>
+  </tr>`).join('');
+}
+
+function filterPatients(q){renderPatients(patients.filter(p=>p.name.toLowerCase().includes(q.toLowerCase())||p.condition.toLowerCase().includes(q.toLowerCase())||p.id.toLowerCase().includes(q.toLowerCase())));}
+function filterPatientStatus(s){renderPatients(s?patients.filter(p=>p.status===s):[...patients]);}
+function filterApts(s,btn){
+  document.querySelectorAll('#sec-appointments .btn:not(.btn-primary)').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  renderAppointments(s==='all'?appointments:appointments.filter(a=>a.status===s));
+}
+function filterLab(s,btn){
+  document.querySelectorAll('#sec-lab .btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  renderLab(s==='all'?labResults:labResults.filter(l=>l.status===s));
+}
+function filterRecords(q){renderRecords(allRecords.filter(r=>r.patient.toLowerCase().includes(q.toLowerCase())||r.diagnosis.toLowerCase().includes(q.toLowerCase())));}
+function globalSearch(q){
+  if(!q)return;
+  const hits=patients.filter(p=>p.name.toLowerCase().includes(q.toLowerCase()));
+  if(hits.length){showSection('patients',document.querySelector('.nav-item:nth-child(2)'));renderPatients(hits);}
+}
+
+function showSection(id,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  if(el)el.classList.add('active');
+  const titles={dashboard:'Dashboard',patients:'Patients',appointments:'Appointments',records:'Medical Records',pharmacy:'Pharmacy',lab:'Lab Results',alerts:'Alerts',analytics:'Analytics',settings:'Settings'};
+  document.getElementById('page-title').textContent=titles[id]||id;
+  const ab=document.getElementById('action-btn');
+  const lbl=document.getElementById('action-label');
+  const actions={patients:['New Patient',"openModal('add-patient-modal')"],appointments:['Book Appointment',"openModal('add-apt-modal')"],records:['New Record',"openModal('add-record-modal')"]};
+  if(actions[id]){ab.style.display='';lbl.textContent=actions[id][0];ab.onclick=new Function(actions[id][1]);}
+  else ab.style.display='none';
+}
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+function addPatient(){
+  const fn=document.getElementById('p-fname').value.trim();
+  const ln=document.getElementById('p-lname').value.trim();
+  if(!fn||!ln){showToast('Please enter patient name');return;}
+  const dob=document.getElementById('p-dob').value;
+  const age=dob?Math.floor((Date.now()-new Date(dob))/(365.25*86400e3)):'-';
+  const np={id:'APIMS-'+String(900+patients.length).padStart(3,'0'),name:`${fn} ${ln}`,age,gender:document.getElementById('p-gender').value,condition:document.getElementById('p-diag').value.trim()||'Not specified',lastVisit:new Date().toISOString().split('T')[0],status:'Active',bp:'—',pulse:'—',temp:'—',meds:[],allergy:document.getElementById('p-allergy').value||'None'};
+  patients.unshift(np);
+  filteredPatients=[...patients];
+  renderPatients(filteredPatients);
+  document.getElementById('m-patients').textContent=patients.length;
+  document.getElementById('patient-count').textContent=patients.length;
+  populateSelects();
+  closeModal('add-patient-modal');
+  ['p-fname','p-lname','p-dob','p-diag','p-phone','p-id','p-allergy'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  showToast(`${np.name} registered successfully`);
+}
+
+function addAppointment(){
+  const psel=document.getElementById('apt-patient-sel');
+  const p=psel.options[psel.selectedIndex].text;
+  const d=document.getElementById('apt-date').value;
+  if(!d){showToast('Please select a date');return;}
+  const dt=new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})+', '+document.getElementById('apt-time').value;
+  appointments.unshift({dt,patient:p,doctor:document.getElementById('apt-doctor').value,type:document.getElementById('apt-type').value,status:'Pending'});
+  renderAppointments(appointments);
+  closeModal('add-apt-modal');
+  showToast('Appointment booked successfully');
+}
+
+function addRecord(){
+  const psel=document.getElementById('rec-patient-sel');
+  const p=psel.options[psel.selectedIndex].text;
+  const diag=document.getElementById('rec-diag').value.trim();
+  if(!diag){showToast('Please enter diagnosis');return;}
+  const today=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  const nr={patient:p,date:today,diagnosis:diag,doctor:'Dr. Ramana',bp:document.getElementById('rec-bp').value||'—',pulse:document.getElementById('rec-pulse').value||'—',temp:document.getElementById('rec-temp').value||'—'};
+  allRecords.unshift(nr);
+  renderRecords(allRecords);
+  closeModal('add-record-modal');
+  ['rec-diag','rec-notes','rec-bp','rec-pulse','rec-temp'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  showToast('Medical record saved');
+}
+
+function viewPatient(name){
+  const p=patients.find(x=>x.name===name);if(!p)return;
+  document.getElementById('detail-name').textContent=`${p.name} — ${p.id}`;
+  document.getElementById('tab-overview').innerHTML=`
+    <div class="grid2" style="margin-bottom:14px">
+      <div><div class="form-label">Age / Gender</div><div style="font-size:14px">${p.age} / ${p.gender}</div></div>
+      <div><div class="form-label">Status</div>${badge(p.status)}</div>
+      <div><div class="form-label">Condition</div><div style="font-size:14px">${p.condition}</div></div>
+      <div><div class="form-label">Allergy</div><div style="font-size:14px;color:${p.allergy!=='None'?'var(--red)':'inherit'};font-weight:${p.allergy!=='None'?'600':'400'}">${p.allergy}</div></div>
+    </div>
+    <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:12px;font-size:13px">
+      <div class="form-label" style="margin-bottom:8px">Latest vitals</div>
+      <div style="display:flex;gap:24px"><span><b>BP:</b> ${p.bp} mmHg</span><span><b>Pulse:</b> ${p.pulse} bpm</span><span><b>Temp:</b> ${p.temp}°C</span></div>
+    </div>`;
+  document.getElementById('tab-vitals').innerHTML=`<div class="vitals-grid">
+    <div class="vital-card"><div class="vital-label">Blood Pressure</div><div class="vital-val" style="font-size:18px">${p.bp}</div><div class="vital-unit">mmHg</div></div>
+    <div class="vital-card"><div class="vital-label">Pulse</div><div class="vital-val">${p.pulse}</div><div class="vital-unit">bpm</div></div>
+    <div class="vital-card"><div class="vital-label">Temperature</div><div class="vital-val">${p.temp}</div><div class="vital-unit">°C</div></div>
+    <div class="vital-card"><div class="vital-label">SpO₂</div><div class="vital-val">98</div><div class="vital-unit">%</div></div>
+    <div class="vital-card"><div class="vital-label">Weight</div><div class="vital-val">—</div><div class="vital-unit">kg</div></div>
+    <div class="vital-card"><div class="vital-label">BMI</div><div class="vital-val">—</div><div class="vital-unit">kg/m²</div></div>
+  </div>`;
+  document.getElementById('tab-meds').innerHTML=p.meds.length?p.meds.map(m=>`<div class="apt-slot"><i class="ti ti-pill" style="font-size:18px;color:var(--text-secondary)"></i><div class="apt-info"><div class="apt-name">${m}</div><div class="apt-type">Active prescription</div></div>${badge('Active')}</div>`).join(''):'<div style="color:var(--text-tertiary);font-size:13px;padding:8px 0">No active medications.</div>';
+  const pRecs=allRecords.filter(r=>r.patient===p.name);
+  document.getElementById('tab-visits').innerHTML=pRecs.length?pRecs.map(r=>`<div class="timeline-item"><div class="timeline-dot" style="background:var(--blue)"></div><div><div style="font-weight:600;font-size:13px">${r.diagnosis}</div><div style="font-size:11px;color:var(--text-secondary);margin-top:2px">${r.date} · ${r.doctor}</div><div style="font-size:12px;margin-top:3px;color:var(--text-secondary)">BP: ${r.bp} · Pulse: ${r.pulse} bpm</div></div></div>`).join(''):'<div style="color:var(--text-tertiary);font-size:13px;padding:8px 0">No visit records found.</div>';
+  ['tab-vitals','tab-meds','tab-visits'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('tab-overview').style.display='';
+  document.querySelectorAll('#patient-detail-modal .tab').forEach((t,i)=>{t.classList.toggle('active',i===0);});
+  openModal('patient-detail-modal');
+}
+
+function switchTab(name,el){
+  document.querySelectorAll('#patient-detail-modal .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['overview','vitals','meds','visits'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===name?'':'none';});
+}
+
+function populateSelects(){
+  const opts=patients.map(p=>`<option>${p.name}</option>`).join('');
+  document.getElementById('apt-patient-sel').innerHTML=opts;
+  document.getElementById('rec-patient-sel').innerHTML=opts;
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function buildCharts(){
+  const months=['Jan','Feb','Mar','Apr','May','Jun'];
+  const vals=[62,78,54,91,85,72];
+  const max=Math.max(...vals);
+  document.getElementById('visit-chart').innerHTML=vals.map(v=>`<div class="bar-col"><div class="bar" style="height:${Math.round(v/max*95)}px;background:#378ADD"></div></div>`).join('');
+  document.getElementById('visit-labels').innerHTML=months.map(m=>`<span>${m}</span>`).join('');
+
+  const ageGroups=['0–10','11–20','21–30','31–40','41–50','51–60','61+'];
+  const ageVals=[40,65,120,180,210,145,87];
+  const amax=Math.max(...ageVals);
+  document.getElementById('age-chart').innerHTML=ageVals.map(v=>`<div class="bar-col"><div class="bar" style="height:${Math.round(v/amax*110)}px;background:#1D9E75"></div></div>`).join('');
+  document.getElementById('age-labels').innerHTML=ageGroups.map(g=>`<span>${g}</span>`).join('');
+
+  const dx=[{d:'Type 2 Diabetes',n:214,pct:75},{d:'Hypertension',n:178,pct:62},{d:'COPD',n:89,pct:31},{d:'Anaemia',n:72,pct:25},{d:'Hypothyroidism',n:54,pct:19}];
+  document.getElementById('top-diagnoses').innerHTML=dx.map(d=>`<div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${d.d}</span><span style="color:var(--text-secondary)">${d.n}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${d.pct}%;background:#378ADD"></div></div></div>`).join('');
+
+  const depts=[{d:'General Medicine',pct:82,c:'#378ADD'},{d:'Gynaecology',pct:67,c:'#D4537E'},{d:'Cardiology',pct:54,c:'#E24B4A'},{d:'Paediatrics',pct:45,c:'#1D9E75'},{d:'Orthopaedics',pct:38,c:'#EF9F27'}];
+  document.getElementById('dept-load').innerHTML=depts.map(d=>`<div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${d.d}</span><span style="color:var(--text-secondary)">${d.pct}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${d.pct}%;background:${d.c}"></div></div></div>`).join('');
+}
+
+function buildDashboard(){
+  const today=appointments.filter(a=>a.dt.startsWith('07 Jun')&&a.status!=='Completed').slice(0,4);
+  document.getElementById('todays-apts').innerHTML=today.map(a=>`<div class="apt-slot"><div class="apt-time">${a.dt.split(', ')[1]}</div><div class="apt-info"><div class="apt-name">${a.patient}</div><div class="apt-type">${a.type} · ${a.doctor}</div></div>${badge(a.status)}</div>`).join('');
+
+  const activity=[
+    {icon:'ti-user-plus',text:'Priya Sharma registered',sub:'Today, 08:45 AM',c:'var(--blue)'},
+    {icon:'ti-file-medical',text:'Record added: Krithi Reddy',sub:'Today, 09:32 AM',c:'var(--red)'},
+    {icon:'ti-pill',text:'Prescription: Aravind Kumar',sub:'Today, 10:00 AM',c:'var(--amber)'},
+    {icon:'ti-microscope',text:'Lab ordered: Suresh Babu',sub:'Yesterday, 4:10 PM',c:'var(--green)'},
+  ];
+  document.getElementById('recent-activity').innerHTML=activity.map(i=>`<div class="timeline-item"><div class="timeline-dot" style="background:${i.c}"></div><div><div style="font-size:13px;font-weight:600">${i.text}</div><div style="font-size:11px;color:var(--text-secondary)">${i.sub}</div></div></div>`).join('');
+}
+
+renderPatients(patients);
+renderAppointments(appointments);
+renderRecords(allRecords);
+renderPharmacy();
+renderLab(labResults);
+populateSelects();
+buildDashboard();
+buildCharts();
+document.getElementById('action-btn').style.display='';
+</script>
+</body>
+</html>
