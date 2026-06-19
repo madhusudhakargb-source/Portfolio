@@ -712,7 +712,6 @@ function addRecord(){
   ['rec-diag','rec-notes','rec-bp','rec-pulse','rec-temp'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   showToast('Medical record saved');
 }
-
 function viewPatient(name){
   const p=patients.find(x=>x.name===name);if(!p)return;
   document.getElementById('detail-name').textContent=`${p.name} — ${p.id}`;
