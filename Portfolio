@@ -1,0 +1,351 @@
+# docker-compose.yml
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: hospital_db
+      POSTGRES_USER: hospital_admin
+      POSTGRES_PASSWORD: secure_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DATABASE_URL: postgresql://hospital_admin:secure_password@postgres/hospital_db
+      REDIS_URL: redis://redis:6379
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+Backend Core (FastAPI + Python)
+# backend/main.py
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, Session
+import redis
+from typing import Optional
+import asyncio
+
+app = FastAPI(title="Hospital Management System")
+Base = declarative_base()
+
+# Database setup
+DATABASE_URL = os.getenv("DATABASE_URL")
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Redis for caching and real-time updates
+redis_client = redis.from_url(os.getenv("REDIS_URL"))
+
+# Models
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Text
+from datetime import datetime
+
+class Patient(Base):
+    __tablename__ = "patients"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    abha_id = Column(String, unique=True, index=True)
+    name = Column(String)
+    age = Column(Integer)
+    gender = Column(String)
+    phone = Column(String)
+    address = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+class Doctor(Base):
+    __tablename__ = "doctors"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    specialization = Column(String)
+    license_no = Column(String, unique=True)
+    available = Column(Boolean, default=True)
+    
+class Bed(Base):
+    __tablename__ = "beds"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    bed_number = Column(String, unique=True)
+    ward_type = Column(String)  # ICU, General, Private
+    occupied = Column(Boolean, default=False)
+    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=True)
+
+class Appointment(Base):
+    __tablename__ = "appointments"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"))
+    doctor_id = Column(Integer, ForeignKey("doctors.id"))
+    appointment_time = Column(DateTime)
+    status = Column(String, default="scheduled")
+    type = Column(String)  # OPD, Emergency, Telemedicine
+
+# API Endpoints
+@app.post("/api/patients")
+async def create_patient(patient_data: dict, db: Session = Depends(get_db)):
+    patient = Patient(**patient_data)
+    db.add(patient)
+    db.commit()
+    
+    # Sync for offline capability
+    redis_client.set(f"patient:{patient.id}", json.dumps(patient_data))
+    
+    return {"id": patient.id, "abha_id": patient.abha_id}
+
+@app.get("/api/beds/availability")
+async def get_bed_availability(db: Session = Depends(get_db)):
+    beds = db.query(Bed).filter(Bed.occupied == False).all()
+    return {"available_beds": len(beds), "details": beds}
+
+@app.post("/api/emergency")
+async def handle_emergency(emergency_data: dict):
+    # AI Emergency Response
+    priority = await ai_triage(emergency_data)
+    
+    # 108 Integration
+    if emergency_data.get("needs_ambulance"):
+        await integrate_108_service(emergency_data)
+    
+    return {"priority": priority, "assigned_doctor": assign_emergency_doctor()}
+
+# AI Voice Agent Integration
+@app.post("/api/voice/telugu")
+async def telugu_voice_assistant(audio_file: bytes):
+    # Process Telugu voice input
+    text = await speech_to_text_telugu(audio_file)
+    response = await process_voice_command(text)
+    audio_response = await text_to_speech_telugu(response)
+    
+    return {"text": response, "audio": audio_response}
+
+# Telemedicine endpoints
+@app.post("/api/telemedicine/session")
+async def create_telemedicine_session(patient_id: int, doctor_id: int):
+    session_id = str(uuid.uuid4())
+    
+    # WebRTC signaling server setup
+    redis_client.set(f"teleconsult:{session_id}", json.dumps({
+        "patient_id": patient_id,
+        "doctor_id": doctor_id,
+        "started_at": datetime.utcnow().isoformat()
+    }))
+    
+    return {"session_id": session_id, "webrtc_url": f"/rtc/{session_id}"}
+Frontend (React + TypeScript)
+// frontend/src/App.tsx
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { OfflineSync } from './components/OfflineSync';
+
+const queryClient = new QueryClient();
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <OfflineSync />
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/patients" element={<PatientManagement />} />
+          <Route path="/emergency" element={<EmergencyPortal />} />
+          <Route path="/telemedicine" element={<TelemedicinePortal />} />
+        </Routes>
+      </Router>
+    </QueryClientProvider>
+  );
+}
+
+// Dashboard Component
+const Dashboard: React.FC = () => {
+  const [stats, setStats] = useState({
+    totalBeds: 200,
+    occupiedBeds: 0,
+    emergencyCases: 0,
+    todayAppointments: 0
+  });
+
+  return (
+    <div className="dashboard-grid">
+      <BedOccupancyChart data={stats} />
+      <EmergencyAlerts />
+      <DoctorAvailability />
+      <RevenueAnalytics />
+    </div>
+  );
+};
+
+// Offline Sync Component
+const OfflineSync: React.FC = () => {
+  useEffect(() => {
+    // IndexedDB for offline storage
+    const db = await openDB('hospital-db', 1, {
+      upgrade(db) {
+        db.createObjectStore('patients');
+        db.createObjectStore('appointments');
+        db.createObjectStore('prescriptions');
+      }
+    });
+
+    // Sync when online
+    window.addEventListener('online', async () => {
+      const offlineData = await db.getAll('patients');
+      offlineData.forEach(async (patient) => {
+        await syncPatientData(patient);
+      });
+    });
+  }, []);
+
+  return null;
+};
+Android App (React Native)
+// mobile/App.tsx
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import NetInfo from '@react-native-community/netinfo';
+
+const Stack = createStackNavigator();
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Dashboard" component={DashboardScreen} />
+        <Stack.Screen name="PatientRegistration" component={PatientRegScreen} />
+        <Stack.Screen name="Emergency" component={EmergencyScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+// Emergency Screen with AI Voice
+const EmergencyScreen: React.FC = () => {
+  const [isRecording, setIsRecording] = useState(false);
+
+  const startVoiceRecording = async () => {
+    // Telugu voice recording
+    const audioData = await recordAudio();
+    const response = await fetch('/api/voice/telugu', {
+      method: 'POST',
+      body: audioData
+    });
+    
+    const { text, audio } = await response.json();
+    playAudioResponse(audio);
+  };
+
+  return (
+    <View style={styles.container}>
+      <TouchableOpacity onPress={startVoiceRecording}>
+        <Text>Emergency Voice Assistant (Telugu)</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+AI Services
+# backend/ai_services.py
+import torch
+from transformers import pipeline
+import speech_recognition as sr
+from gtts import gTTS
+
+class HospitalAIService:
+    def __init__(self):
+        self.triage_model = self.load_triage_model()
+        self.telugu_stt = pipeline("automatic-speech-recognition", model="vasista22/whisper-telugu")
+        
+    async def ai_triage(self, symptoms: dict) -> str:
+        # Emergency severity classification
+        features = self.extract_features(symptoms)
+        severity = self.triage_model.predict(features)
+        
+        if severity > 0.8:
+            return "CRITICAL"
+        elif severity > 0.5:
+            return "URGENT"
+        else:
+            return "NORMAL"
+    
+    async def telugu_voice_processing(self, audio_file: bytes) -> dict:
+        # Convert Telugu speech to text
+        text = self.telugu_stt(audio_file)
+        
+        # Process medical query
+        response = await self.process_medical_query(text)
+        
+        # Convert response back to Telugu speech
+        tts = gTTS(text=response, lang='te')
+        audio_response = tts.save("response.mp3")
+        
+        return {"text": response, "audio": audio_response}
+Deployment Configuration
+# kubernetes/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hospital-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hospital-backend
+  template:
+    metadata:
+      labels:
+        app: hospital-backend
+    spec:
+      containers:
+      - name: backend
+        image: hospital-backend:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: url
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hospital-backend-service
+spec:
+  selector:
+    app: hospital-backend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: LoadBalancer
